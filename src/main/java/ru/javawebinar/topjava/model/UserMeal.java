@@ -25,7 +25,9 @@ public class UserMeal {
         return dateTime.toLocalDate();
     }
 
-    public LocalTime getTime() { return LocalTime.of(dateTime.getHour(), dateTime.getMinute(), dateTime.getSecond(), dateTime.getNano()); }
+    public LocalTime getTime() {
+        return dateTime.toLocalTime();
+    }
 
     public String getDescription() {
         return description;
