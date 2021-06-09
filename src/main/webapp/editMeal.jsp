@@ -12,10 +12,11 @@
 <h2>Meal</h2>
 <hr>
 <form method="POST" action='meals' accept-charset="UTF-8" name="frmAddMeal">
-    <input type="hidden" readonly="readonly" name="mealId" value="<c:out value="${meal.id}" />"/> <br/>
-    Description : <input type="text" name="description" value="<c:out value="${meal.description}" />"/> <br/>
-    Calories : <input type="text" name="calories" value="<c:out value="${meal.calories}" />"/> <br/>
-    DateTime : <input type="datetime-local" name="dateTime" value="<c:out value="${meal.dateTime}" />"/> <br/>
+    <input type="hidden" name="mealId"
+           value="<%=(request.getParameter("mealId")!=null)?request.getParameter("mealId"):"0"%>"/>
+    Description : <input type="text" name="description" value="${meal.description}"/> <br/>
+    Calories : <input type="number" id="number" name="calories" value="${meal.calories}"/> <br/>
+    DateTime : <input type="datetime-local" name="dateTime" value="${meal.dateTime}"/> <br/>
     <input type="submit" value="Submit"/>
 </form>
 </body>

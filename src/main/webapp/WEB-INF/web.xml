@@ -25,6 +25,7 @@
     <servlet-mapping>
         <servlet-name>MealsServlet</servlet-name>
         <url-pattern>/meals</url-pattern>
+<!--        <url-pattern>MealsServlet</url-pattern>-->
     </servlet-mapping>
 
 </web-app>

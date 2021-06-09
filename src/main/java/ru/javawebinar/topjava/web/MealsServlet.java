@@ -2,7 +2,7 @@ package ru.javawebinar.topjava.web;
 
 import org.slf4j.Logger;
 import ru.javawebinar.topjava.dao.MealDao;
-import ru.javawebinar.topjava.dao.impl.MealDaoImpl;
+import ru.javawebinar.topjava.dao.impl.MealDaoInMemoryImpl;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.util.MealsUtil;
 
@@ -21,41 +21,43 @@ public class MealsServlet extends HttpServlet {
     private static final Logger log = getLogger(MealsServlet.class);
     private static final String INSERT_OR_EDIT = "/editMeal.jsp";
     private static final String LIST_MEAL = "/meals.jsp";
-    MealDao mealDao = new MealDaoImpl();
+    private final MealDao mealDao = new MealDaoInMemoryImpl();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
-        List<Meal> meals = mealDao.getAllMeals();
-        String forward = "";
+        List<Meal> meals = mealDao.getAll();
         String action = request.getParameter("action");
 
         if (action == null) {
             log.debug("redirect to meals");
-            request.setAttribute("meals", MealsUtil.filteredByStreams(meals, LocalTime.MIN, LocalTime.MAX));
-            forward = LIST_MEAL;
+            request.setAttribute("meals", MealsUtil.filteredByStreams(meals, LocalTime.MIN, LocalTime.MAX, MealsUtil.getCaloriesPerDay()));
+            request.getRequestDispatcher(LIST_MEAL).forward(request, response);
         } else if (action.equalsIgnoreCase("delete")) {
             log.debug("redirect to meals");
             int mealId = Integer.parseInt(request.getParameter("mealId"));
             mealDao.delete(mealId);
-            request.setAttribute("meals", MealsUtil.filteredByStreams(meals, LocalTime.MIN, LocalTime.MAX));
-            forward = LIST_MEAL;
+            request.setAttribute("meals", MealsUtil.filteredByStreams(meals, LocalTime.MIN, LocalTime.MAX, MealsUtil.getCaloriesPerDay()));
+            response.sendRedirect("meals");
         } else if (action.equalsIgnoreCase("edit")) {
             log.debug("redirect to editMeal");
             int mealId = Integer.parseInt(request.getParameter("mealId"));
             Meal meal = mealDao.findById(mealId);
             request.setAttribute("meal", meal);
-            forward = INSERT_OR_EDIT;
+            request.getRequestDispatcher(INSERT_OR_EDIT).forward(request, response);
         } else if (action.equalsIgnoreCase("meals")) {
             log.debug("redirect to meals");
-            forward = LIST_MEAL;
-            request.setAttribute("meals", MealsUtil.filteredByStreams(meals, LocalTime.MIN, LocalTime.MAX));
-        } else {
+            request.setAttribute("meals", MealsUtil.filteredByStreams(meals, LocalTime.MIN, LocalTime.MAX, MealsUtil.getCaloriesPerDay()));
+            request.getRequestDispatcher(LIST_MEAL).forward(request, response);
+        } else if (action.equalsIgnoreCase("insert")) {
             log.debug("redirect to editMeal");
-            forward = INSERT_OR_EDIT;
+            request.getRequestDispatcher(INSERT_OR_EDIT).forward(request, response);
+        } else {
+            log.debug("redirect to meals");
+            request.setAttribute("meals", MealsUtil.filteredByStreams(meals, LocalTime.MIN, LocalTime.MAX, MealsUtil.getCaloriesPerDay()));
+            request.getRequestDispatcher(LIST_MEAL).forward(request, response);
         }
-        request.getRequestDispatcher(forward).forward(request, response);
     }
 
     @Override
@@ -64,15 +66,15 @@ public class MealsServlet extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
         String dateString = request.getParameter("dateTime");
         LocalDateTime dateTime = LocalDateTime.parse(dateString);
+        int mealId = Integer.parseInt(request.getParameter("mealId"));
+        Meal meal = new Meal(mealId, dateTime, request.getParameter("description"), Integer.parseInt(request.getParameter("calories")));
 
-        Meal meal = new Meal(dateTime, request.getParameter("description"), Integer.parseInt(request.getParameter("calories")));
-        String mealId = request.getParameter("mealId");
-        if (mealId == null || mealId.isEmpty()) {
+        if (mealId <= 0) {
             mealDao.create(meal);
         } else {
-            mealDao.update(Integer.parseInt(mealId), meal);
+            mealDao.update(meal);
         }
-        request.setAttribute("meals", MealsUtil.filteredByStreams(mealDao.getAllMeals(), LocalTime.MIN, LocalTime.MAX));
-        request.getRequestDispatcher(LIST_MEAL).forward(request, response);
+        request.setAttribute("meals", MealsUtil.filteredByStreams(mealDao.getAll(), LocalTime.MIN, LocalTime.MAX, MealsUtil.getCaloriesPerDay()));
+        response.sendRedirect("meals");
     }
 }
