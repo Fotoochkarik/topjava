@@ -12,8 +12,8 @@
 <h2>Meal</h2>
 <hr>
 <form method="POST" action='meals' accept-charset="UTF-8" name="frmAddMeal">
-    <input type="hidden" name="mealId"
-           value="<%=(request.getParameter("mealId")!=null)?request.getParameter("mealId"):"0"%>"/>
+    <input type="hidden" name="mealId" value="${mail.id}"/>
+<%--           value="<%=(request.getParameter("mealId")!=null)?request.getParameter("mealId"):"0"%>"/>--%>
     Description : <input type="text" name="description" value="${meal.description}"/> <br/>
     Calories : <input type="number" id="number" name="calories" value="${meal.calories}"/> <br/>
     DateTime : <input type="datetime-local" name="dateTime" value="${meal.dateTime}"/> <br/>
