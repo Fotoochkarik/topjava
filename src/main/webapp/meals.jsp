@@ -23,6 +23,27 @@
     <h2>Meals</h2>
     <a href="meals?action=create">Add Meal</a>
     <br><br>
+    <form method="post" action='meals?action=filter' accept-charset="UTF-8" name="Filter">
+<%--    <form method="get" action="filter">--%>
+<%--        <input type="hidden" name="action" value="filter">--%>
+        <dl>
+            <dt>Start date:</dt>
+            <dd><input type="date" value="${meal.date}" name="startDate" required></dd>
+        </dl>
+        <dl>
+            <dt>End date:</dt>
+            <dd><input type="date" value="${meal.date}"  name="endDate" required></dd>
+        </dl>
+    <dl>
+            <dt>Start time:</dt>
+            <dd><input type="time" value="${meal.time}"  name="startTime" required></dd>
+        </dl>
+    <dl>
+            <dt>End time:</dt>
+            <dd><input type="time" value="${meal.time}"  name="endTime" required></dd>
+        </dl>
+        <button type="submit">Filter</button>
+    </form>
     <table border="1" cellpadding="8" cellspacing="0">
         <thead>
         <tr>

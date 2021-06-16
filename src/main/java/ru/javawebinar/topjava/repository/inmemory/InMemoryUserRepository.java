@@ -8,6 +8,7 @@ import ru.javawebinar.topjava.repository.UserRepository;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -40,19 +41,24 @@ public class InMemoryUserRepository implements UserRepository {
     @Override
     public User get(int id) {
         log.info("get {}", id);
-        return repository.getOrDefault(id, null);
+        return repository.get(id);
     }
 
     @Override
     public List<User> getAll() {
         log.info("getAll");
-        return repository.values().stream().sorted(Comparator.comparing(User::getName, String.CASE_INSENSITIVE_ORDER)
-                .thenComparing((User::getEmail), String.CASE_INSENSITIVE_ORDER)).collect(Collectors.toList());
+        return repository.values().stream()
+                .sorted(Comparator.comparing(User::getName, String.CASE_INSENSITIVE_ORDER)
+                .thenComparing((User::getEmail), String.CASE_INSENSITIVE_ORDER))
+                .collect(Collectors.toList());
     }
 
     @Override
     public User getByEmail(String email) {
         log.info("getByEmail {}", email);
-        return repository.values().stream().filter(a -> a.getEmail().equals(email)).findFirst().orElse(null);
+        return repository.values().stream()
+                .filter(user -> user.getEmail().toLowerCase().equals(email.toLowerCase(Locale.ROOT)))
+                .findFirst()
+                .orElse(null);
     }
 }
