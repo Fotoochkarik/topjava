@@ -1,5 +1,6 @@
 package ru.javawebinar.topjava.service;
 
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.repository.MealRepository;
@@ -11,7 +12,6 @@ import java.time.LocalTime;
 import java.util.List;
 
 import static ru.javawebinar.topjava.util.ValidationUtil.checkNotFoundWithId;
-import static ru.javawebinar.topjava.web.SecurityUtil.authUserCaloriesPerDay;
 
 @Service
 public class MealService {
@@ -34,23 +34,23 @@ public class MealService {
         return checkNotFoundWithId(repository.get(id, userId), id);
     }
 
-    public List<MealTo> getAll(int userId) {
-        return MealsUtil.getTos(repository.getAll(userId), authUserCaloriesPerDay());
+    public List<MealTo> getAll(int userId, int userCaloriesPerDay) {
+        return MealsUtil.getTos(repository.getAll(userId), userCaloriesPerDay);
     }
 
     public void update(Meal meal, int userId) {
         checkNotFoundWithId(repository.save(meal, userId), meal.getId());
     }
 
-    public List<MealTo> getFilterDateTime(LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime, int userId) {
+    public List<MealTo> getFilterDateTime(@Nullable LocalDate startDate, @Nullable LocalDate endDate, @Nullable LocalTime startTime, @Nullable LocalTime endTime, int userId, int userCaloriesPerDay) {
         if (startDate == null || endDate == null) {
-            return MealsUtil.getFilteredTos(repository.getAll(userId), authUserCaloriesPerDay(), startTime, endTime);
+            return MealsUtil.getFilteredTos(repository.getAll(userId), userCaloriesPerDay, startTime, endTime);
         } else if (startTime == null || endTime == null) {
-            return MealsUtil.getTos(repository.getFilterDate(startDate, endDate, userId), authUserCaloriesPerDay());
+            return MealsUtil.getTos(repository.getFilterDate(startDate, endDate, userId), userCaloriesPerDay);
         } else if (startDate != null && endDate != null && startTime != null && endTime != null) {
-            return MealsUtil.getFilteredTos(repository.getFilterDate(startDate, endDate, userId), authUserCaloriesPerDay(), startTime, endTime);
+            return MealsUtil.getFilteredTos(repository.getFilterDate(startDate, endDate, userId), userCaloriesPerDay, startTime, endTime);
         } else {
-            return MealsUtil.getTos(repository.getAll(userId), authUserCaloriesPerDay());
+            return MealsUtil.getTos(repository.getAll(userId), userCaloriesPerDay);
         }
     }
 }

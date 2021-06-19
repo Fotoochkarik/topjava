@@ -7,6 +7,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.web.meal.MealRestController;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -15,20 +16,24 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Locale;
 import java.util.Objects;
 
 public class MealServlet extends HttpServlet {
     private static final Logger log = LoggerFactory.getLogger(MealServlet.class);
 
-    MealRestController mealRestController;
+    private MealRestController mealRestController;
+    private ConfigurableApplicationContext springContext;
 
     @Override
-    public void init() {
-        try (ConfigurableApplicationContext appCtx = new ClassPathXmlApplicationContext("spring/spring-app.xml")) {
-            mealRestController = appCtx.getBean(MealRestController.class);
-        }
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+        springContext = new ClassPathXmlApplicationContext("spring/spring-app.xml");
+        mealRestController = springContext.getBean(MealRestController.class);
     }
+
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -49,10 +54,10 @@ public class MealServlet extends HttpServlet {
                 response.sendRedirect("meals");
                 break;
             case "filter":
-                LocalDate startDate = LocalDate.parse(request.getParameter("startDate"));
-                LocalDate endDate = LocalDate.parse(request.getParameter("endDate"));
-                LocalTime startTime = LocalTime.parse(request.getParameter("startTime"));
-                LocalTime endTime = LocalTime.parse(request.getParameter("endTime"));
+                LocalDate startDate = LocalDate.parse(request.getParameter("startDate"), DateTimeFormatter.ofPattern("dd-MM-yyyy", Locale.ROOT));
+                LocalDate endDate = LocalDate.parse(request.getParameter("endDate"), DateTimeFormatter.ofPattern("dd-MM-yyyy", Locale.ROOT));
+                LocalTime startTime = LocalTime.parse(request.getParameter("startTime"), DateTimeFormatter.ofPattern("HH:mm", Locale.ROOT));
+                LocalTime endTime = LocalTime.parse(request.getParameter("endTime"), DateTimeFormatter.ofPattern("HH:mm", Locale.ROOT));
                 request.setAttribute("meals",
                         mealRestController.getFilterDateTime(startDate, endDate, startTime, endTime));
                 log.info("filter");
@@ -92,6 +97,12 @@ public class MealServlet extends HttpServlet {
                 request.getRequestDispatcher("/meals.jsp").forward(request, response);
                 break;
         }
+    }
+
+    @Override
+    public void destroy() {
+        springContext.close();
+        super.destroy();
     }
 
     private int getId(HttpServletRequest request) {

@@ -8,7 +8,6 @@ import ru.javawebinar.topjava.repository.UserRepository;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -49,7 +48,7 @@ public class InMemoryUserRepository implements UserRepository {
         log.info("getAll");
         return repository.values().stream()
                 .sorted(Comparator.comparing(User::getName, String.CASE_INSENSITIVE_ORDER)
-                .thenComparing((User::getEmail), String.CASE_INSENSITIVE_ORDER))
+                        .thenComparing((User::getEmail), String.CASE_INSENSITIVE_ORDER))
                 .collect(Collectors.toList());
     }
 
@@ -57,7 +56,7 @@ public class InMemoryUserRepository implements UserRepository {
     public User getByEmail(String email) {
         log.info("getByEmail {}", email);
         return repository.values().stream()
-                .filter(user -> user.getEmail().toLowerCase().equals(email.toLowerCase(Locale.ROOT)))
+                .filter(user -> user.getEmail().equalsIgnoreCase(email))
                 .findFirst()
                 .orElse(null);
     }

@@ -10,6 +10,7 @@ import ru.javawebinar.topjava.util.MealsUtil;
 
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,8 +24,11 @@ public class InMemoryMealRepository implements MealRepository {
     private final AtomicInteger counter = new AtomicInteger(0);
 
     {
-        for (Meal meal : MealsUtil.meals) {
+        for (Meal meal : MealsUtil.meals1) {
             save(meal, 1);
+        }
+        for (Meal meal : MealsUtil.meals2) {
+            save(meal, 2);
         }
     }
 
@@ -56,13 +60,8 @@ public class InMemoryMealRepository implements MealRepository {
     @Override
     public Meal get(int id, int userId) {
         Meal meal = repository.get(id);
-        if (meal != null) {
-            if (meal.getUserId() == userId) {
-                log.info("get {}", id);
-                return meal;
-            }
-        }
-        return null;
+        log.info("get {}", id);
+        return (meal != null && meal.getUserId() == userId) ? meal : null;
     }
 
     @Override
@@ -70,7 +69,7 @@ public class InMemoryMealRepository implements MealRepository {
         log.info("getAll");
         return repository.values().stream()
                 .filter(meal -> meal.getUserId().equals(userId))
-                .sorted(((a, b) -> -a.getDateTime().compareTo(b.getDateTime())))
+                .sorted(Comparator.comparing(Meal::getDateTime).reversed())
                 .collect(Collectors.toList());
     }
 
@@ -85,10 +84,7 @@ public class InMemoryMealRepository implements MealRepository {
 
     private boolean isBelong(int id, int userId) {
         Meal meal = repository.get(id);
-        if (meal != null) {
-            return meal.getUserId() == userId;
-        }
-        return false;
+        return meal != null && meal.getUserId() == userId;
     }
 }
 
