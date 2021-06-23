@@ -3,6 +3,7 @@ package ru.javawebinar.topjava.repository.inmemory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
+import ru.javawebinar.topjava.MealTestData;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.repository.MealRepository;
 import ru.javawebinar.topjava.util.MealsUtil;
@@ -17,11 +18,13 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static ru.javawebinar.topjava.UserTestData.ADMIN_ID;
 import static ru.javawebinar.topjava.UserTestData.USER_ID;
+import static ru.javawebinar.topjava.model.AbstractBaseEntity.START_SEQ;
 
 @Repository
 public class InMemoryMealRepository implements MealRepository {
@@ -36,6 +39,30 @@ public class InMemoryMealRepository implements MealRepository {
         save(new Meal(LocalDateTime.of(2015, Month.JUNE, 1, 21, 0), "Админ ужин", 1500), ADMIN_ID);
     }
 
+    public void init() {
+        usersMealsMap.clear();
+        AtomicInteger counter = new AtomicInteger(START_SEQ + 2);
+        InMemoryBaseRepository<Meal> mealsUser = new InMemoryBaseRepository<>();
+        MealTestData.mealsUser.forEach(meal -> {
+                    if (meal.isNew()) {
+                        meal.setId(counter.incrementAndGet());
+                        mealsUser.map.put(meal.getId(), meal);
+                    }
+                }
+        );
+        mealsUser.map.put(USER_ID, MealTestData.testMeal);
+        usersMealsMap.put(USER_ID, mealsUser);
+        InMemoryBaseRepository<Meal> mealsAdmin = new InMemoryBaseRepository<>();
+        MealTestData.mealsAdmin.forEach(meal -> {
+                    if (meal.isNew()) {
+                        meal.setId(counter.incrementAndGet());
+                        mealsUser.map.put(meal.getId(), meal);
+                    }
+                }
+        );
+        usersMealsMap.put(ADMIN_ID, mealsAdmin);
+        InMemoryBaseRepository.counter.getAndSet(counter.get());
+    }
 
     @Override
     public Meal save(Meal meal, int userId) {

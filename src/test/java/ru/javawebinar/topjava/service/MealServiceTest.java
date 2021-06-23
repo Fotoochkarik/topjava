@@ -9,11 +9,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.context.junit4.SpringRunner;
+import ru.javawebinar.topjava.MealTestData;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
-
-import java.time.LocalDateTime;
-import java.time.Month;
 
 import static org.junit.Assert.assertThrows;
 import static ru.javawebinar.topjava.MealTestData.assertMatch;
@@ -49,7 +47,13 @@ public class MealServiceTest {
     @Test
     public void duplicateDateTimeCreate() {
         assertThrows(DataAccessException.class, () ->
-                service.create(new Meal(null, LocalDateTime.of(2021, Month.FEBRUARY, 01, 07, 00), "Duplicate Meal", 550), USER_ID));
+                service.create(new Meal(null, service.get(100002, USER_ID).getDateTime(), "Duplicate Meal", 550), USER_ID));
+    }
+
+    @Test
+    public void delete() {
+        service.delete(100004, USER_ID);
+        assertThrows(NotFoundException.class, () -> service.get(100004, USER_ID));
     }
 
     @Test
@@ -58,7 +62,26 @@ public class MealServiceTest {
     }
 
     @Test
+    public void get() {
+        Meal meal = service.get(100, USER_ID);
+        MealTestData.assertMatch(meal, MealTestData.testMeal);
+    }
+
+    @Test
     public void getNotFound() {
         assertThrows(NotFoundException.class, () -> service.get(NOT_FOUND, USER_ID));
+    }
+
+    @Test
+    public void update() {
+        Meal updated = MealTestData.getUpdated();
+        service.update(updated, USER_ID);
+        MealTestData.assertMatch(service.get(100, USER_ID), MealTestData.getUpdated());
+    }
+
+    @Test
+    public void getAll() {
+//        List<Meal> all = service.getAll(ADMIN_ID);
+//        MealTestData.assertMatch(all, MealTestData.mealsAdmin);
     }
 }
