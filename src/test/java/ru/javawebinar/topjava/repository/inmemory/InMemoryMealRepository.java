@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static ru.javawebinar.topjava.MealTestData.referenceMeal;
 import static ru.javawebinar.topjava.UserTestData.ADMIN_ID;
 import static ru.javawebinar.topjava.UserTestData.USER_ID;
 import static ru.javawebinar.topjava.model.AbstractBaseEntity.START_SEQ;
@@ -41,27 +42,28 @@ public class InMemoryMealRepository implements MealRepository {
 
     public void init() {
         usersMealsMap.clear();
-        AtomicInteger counter = new AtomicInteger(START_SEQ + 2);
+        AtomicInteger counter = new AtomicInteger();
         InMemoryBaseRepository<Meal> mealsUser = new InMemoryBaseRepository<>();
         MealTestData.mealsUser.forEach(meal -> {
                     if (meal.isNew()) {
-                        meal.setId(counter.incrementAndGet());
                         mealsUser.map.put(meal.getId(), meal);
+                        counter.set(meal.getId());
                     }
                 }
         );
-        mealsUser.map.put(USER_ID, MealTestData.testMeal);
+        mealsUser.map.put(referenceMeal.getId(), referenceMeal);
         usersMealsMap.put(USER_ID, mealsUser);
         InMemoryBaseRepository<Meal> mealsAdmin = new InMemoryBaseRepository<>();
         MealTestData.mealsAdmin.forEach(meal -> {
                     if (meal.isNew()) {
-                        meal.setId(counter.incrementAndGet());
                         mealsUser.map.put(meal.getId(), meal);
+                        counter.set(meal.getId());
                     }
                 }
         );
         usersMealsMap.put(ADMIN_ID, mealsAdmin);
-        InMemoryBaseRepository.counter.getAndSet(counter.get());
+        InMemoryBaseRepository.counter.getAndSet(counter.get() + 1);
+
     }
 
     @Override

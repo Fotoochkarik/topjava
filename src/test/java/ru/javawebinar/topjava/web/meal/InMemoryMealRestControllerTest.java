@@ -5,11 +5,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import ru.javawebinar.topjava.MealTestData;
 import ru.javawebinar.topjava.repository.inmemory.InMemoryMealRepository;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import java.util.Arrays;
 
+import static ru.javawebinar.topjava.MealTestData.referenceMeal;
 import static ru.javawebinar.topjava.UserTestData.NOT_FOUND;
 import static ru.javawebinar.topjava.UserTestData.USER_ID;
 
@@ -48,8 +50,8 @@ public class InMemoryMealRestControllerTest {
 
     @Test
     public void delete() {
-        controller.delete(100006);
-        Assert.assertNull(repository.get(100006, USER_ID));
+        controller.delete(referenceMeal.getId());
+        Assert.assertNull(repository.get(referenceMeal.getId(), USER_ID));
     }
 
     @Test
