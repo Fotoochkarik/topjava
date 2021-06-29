@@ -3,7 +3,7 @@ package ru.javawebinar.topjava.service;
 import org.junit.AfterClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestWatcher;
+import org.junit.rules.Stopwatch;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -21,7 +21,9 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import static java.lang.String.format;
 import static org.junit.Assert.assertThrows;
 import static ru.javawebinar.topjava.MealTestData.*;
 import static ru.javawebinar.topjava.UserTestData.ADMIN_ID;
@@ -34,34 +36,32 @@ import static ru.javawebinar.topjava.UserTestData.USER_ID;
 @RunWith(SpringRunner.class)
 @Sql(scripts = "classpath:db/populateDB.sql", config = @SqlConfig(encoding = "UTF-8"))
 public class MealServiceTest {
-
     private static final Logger log = LoggerFactory.getLogger(MealServiceTest.class);
+    private static final List<String> testInfo = new ArrayList<>();
+
     @Autowired
     private MealService service;
-    private static List<String> testInfo = new ArrayList<>();
 
     @Rule
-    public TestWatcher watcher = new TestWatcher() {
-        private long t1;
-
+    public Stopwatch timer = new Stopwatch() {
         @Override
-        protected void starting(Description description) {
-            t1 = System.currentTimeMillis();
-        }
-
-        @Override
-        protected void finished(Description description) {
-            long t2 = System.currentTimeMillis();
-            log.info(" {} ms", (t2 - t1));
-            testInfo.add("Test " + description.getMethodName() + " " + (t2 - t1) + " ms");
+        protected void finished(long nanos, Description description) {
+            log.info("{} {} ms", description.getMethodName(), timer.runtime(TimeUnit.MILLISECONDS));
+            testInfo.add(format("|%-30s|", description.getMethodName()) +
+                    format("%20d", timer.runtime(TimeUnit.MILLISECONDS)) + "ms");
         }
     };
 
     @AfterClass
     public static void afterClass() {
-        testInfo.forEach(System.out::println);
+        testInfo.forEach(log::info);
     }
 
+    @Test
+    public void delete() {
+        service.delete(MEAL1_ID, USER_ID);
+        assertThrows(NotFoundException.class, () -> service.get(MEAL1_ID, USER_ID));
+    }
 
     @Test
     public void deleteNotFound() {
@@ -89,17 +89,16 @@ public class MealServiceTest {
                 service.create(new Meal(null, meal1.getDateTime(), "duplicate", 100), USER_ID));
     }
 
-
     @Test
     public void get() {
         Meal actual = service.get(ADMIN_MEAL_ID, ADMIN_ID);
         MATCHER.assertMatch(actual, adminMeal1);
     }
 
-//    @Test
-//    public void getNotFound() {
-//        assertThrows(NotFoundException.class, () -> service.get(NOT_FOUND, USER_ID));
-//    }
+    @Test
+    public void getNotFound() {
+        assertThrows(NotFoundException.class, () -> service.get(NOT_FOUND, USER_ID));
+    }
 
     @Test
     public void getNotOwn() {
