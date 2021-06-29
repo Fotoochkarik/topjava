@@ -1,7 +1,13 @@
 package ru.javawebinar.topjava.service;
 
+import org.junit.AfterClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.test.context.ContextConfiguration;
@@ -13,6 +19,8 @@ import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertThrows;
 import static ru.javawebinar.topjava.MealTestData.*;
@@ -27,14 +35,33 @@ import static ru.javawebinar.topjava.UserTestData.USER_ID;
 @Sql(scripts = "classpath:db/populateDB.sql", config = @SqlConfig(encoding = "UTF-8"))
 public class MealServiceTest {
 
+    private static final Logger log = LoggerFactory.getLogger(MealServiceTest.class);
     @Autowired
     private MealService service;
+    private static List<String> testInfo = new ArrayList<>();
 
-    @Test
-    public void delete() {
-        service.delete(MEAL1_ID, USER_ID);
-        assertThrows(NotFoundException.class, () -> service.get(MEAL1_ID, USER_ID));
+    @Rule
+    public TestWatcher watcher = new TestWatcher() {
+        private long t1;
+
+        @Override
+        protected void starting(Description description) {
+            t1 = System.currentTimeMillis();
+        }
+
+        @Override
+        protected void finished(Description description) {
+            long t2 = System.currentTimeMillis();
+            log.info(" {} ms", (t2 - t1));
+            testInfo.add("Test " + description.getMethodName() + " " + (t2 - t1) + " ms");
+        }
+    };
+
+    @AfterClass
+    public static void afterClass() {
+        testInfo.forEach(System.out::println);
     }
+
 
     @Test
     public void deleteNotFound() {
@@ -69,10 +96,10 @@ public class MealServiceTest {
         MATCHER.assertMatch(actual, adminMeal1);
     }
 
-    @Test
-    public void getNotFound() {
-        assertThrows(NotFoundException.class, () -> service.get(NOT_FOUND, USER_ID));
-    }
+//    @Test
+//    public void getNotFound() {
+//        assertThrows(NotFoundException.class, () -> service.get(NOT_FOUND, USER_ID));
+//    }
 
     @Test
     public void getNotOwn() {
