@@ -47,14 +47,15 @@ public class MealServiceTest {
         @Override
         protected void finished(long nanos, Description description) {
             log.info("{} {} ms", description.getMethodName(), timer.runtime(TimeUnit.MILLISECONDS));
-            testInfo.add(format("|%-30s|", description.getMethodName()) +
-                    format("%20d", timer.runtime(TimeUnit.MILLISECONDS)) + "ms");
+            String name = description.getMethodName();
+            long time = timer.runtime(TimeUnit.MILLISECONDS);
+            testInfo.add(format("\n" + "|%-30s|  %20d ms", name, time));
         }
     };
 
     @AfterClass
     public static void afterClass() {
-        testInfo.forEach(log::info);
+        log.info(testInfo.toString());
     }
 
     @Test
