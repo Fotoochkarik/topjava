@@ -35,7 +35,12 @@ abstract class JdbcMealRepository implements MealRepository {
     @Override
     public Meal save(Meal meal, int userId) {
         MapSqlParameterSource map = getParameterSource(meal, userId);
-        return getMeal(meal, map);
+        if (meal.isNew()) {
+            addId(meal, map);
+        } else {
+            if (updateMeal(map)) return null;
+        }
+        return meal;
     }
 
     @Override
@@ -60,33 +65,35 @@ abstract class JdbcMealRepository implements MealRepository {
     public List<Meal> getBetweenHalfOpen(LocalDateTime startDateTime, LocalDateTime endDateTime, int userId) {
         return jdbcTemplate.query(
                 "SELECT * FROM meals WHERE user_id=?  AND date_time >=  ? AND date_time < ? ORDER BY date_time DESC",
-                ROW_MAPPER, userId, addDateTime(startDateTime), addDateTime(endDateTime));
+                ROW_MAPPER, userId, transformationDateTime(startDateTime), transformationDateTime(endDateTime));
     }
 
-    protected abstract Object addDateTime(LocalDateTime datetime);
-
-    protected Meal getMeal(Meal meal, MapSqlParameterSource map) {
-        if (meal.isNew()) {
-            Number newId = insertMeal.executeAndReturnKey(map);
-            meal.setId(newId.intValue());
-        } else {
-            if (namedParameterJdbcTemplate.update("" +
-                    "UPDATE meals " +
-                    "   SET description=:description, calories=:calories, date_time=:date_time " +
-                    " WHERE id=:id AND user_id=:user_id", map) == 0) {
-                return null;
-            }
-        }
-        return meal;
+    protected <T> T transformationDateTime(Object obj) {
+        return (T) obj;
     }
 
-    protected MapSqlParameterSource getParameterSource(Meal meal, int userId) {
+    private MapSqlParameterSource getParameterSource(Meal meal, int userId) {
         MapSqlParameterSource map = new MapSqlParameterSource()
                 .addValue("id", meal.getId())
                 .addValue("description", meal.getDescription())
                 .addValue("calories", meal.getCalories())
-                .addValue("date_time", meal.getDateTime())
+                .addValue("date_time", transformationDateTime(meal.getDateTime()))
                 .addValue("user_id", userId);
         return map;
+    }
+
+    private void addId(Meal meal, MapSqlParameterSource map) {
+        Number newId = insertMeal.executeAndReturnKey(map);
+        meal.setId(newId.intValue());
+    }
+
+    private boolean updateMeal(MapSqlParameterSource map) {
+        if (namedParameterJdbcTemplate.update("" +
+                "UPDATE meals " +
+                "   SET description=:description, calories=:calories, date_time=:date_time " +
+                " WHERE id=:id AND user_id=:user_id", map) == 0) {
+            return true;
+        }
+        return false;
     }
 }
