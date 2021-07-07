@@ -7,4 +7,14 @@ import static ru.javawebinar.topjava.Profiles.DATAJPA;
 
 @ActiveProfiles(DATAJPA)
 public class DataJpaUserServiceTest extends UserServiceTest {
+//    @Autowired
+//    DataJpaUserRepository repository;
+
+//    @Test
+//    public void getMeals() {
+//        User user = repository.getWithMeals(USER_ID);
+//        UserTestData.MATCHER.assertMatch(user, UserTestData.user);
+//        MealTestData.MATCHER.assertMatch(user.getMeals(), meals);
+//    }
+
 }

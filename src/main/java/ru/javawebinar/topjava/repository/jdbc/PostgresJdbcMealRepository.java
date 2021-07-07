@@ -19,7 +19,8 @@ public class PostgresJdbcMealRepository extends JdbcMealRepository {
         super(jdbcTemplate, namedParameterJdbcTemplate);
     }
 
-    protected LocalDateTime transformationDateTime(LocalDateTime datetime) {
-        return datetime;
+    @Override
+    protected LocalDateTime transformDateTime(LocalDateTime ldt) {
+        return ldt;
     }
 }

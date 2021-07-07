@@ -1,6 +1,5 @@
 package ru.javawebinar.topjava;
 
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.GenericXmlApplicationContext;
 import ru.javawebinar.topjava.model.Role;
 import ru.javawebinar.topjava.model.User;
@@ -14,13 +13,12 @@ import java.time.Month;
 import java.util.Arrays;
 import java.util.List;
 
-import static ru.javawebinar.topjava.Profiles.HSQL_DB;
-
 public class SpringMain {
     public static void main(String[] args) {
         // java 7 automatic resource management (ARM)
-        try (ConfigurableApplicationContext appCtx = new GenericXmlApplicationContext("spring/spring-app.xml", "spring/inmemory.xml")) {
-            appCtx.getEnvironment().setActiveProfiles(Profiles.REPOSITORY_IMPLEMENTATION, HSQL_DB);
+        try (GenericXmlApplicationContext appCtx = new GenericXmlApplicationContext("spring/spring-app.xml",
+                "spring/inmemory.xml")) {
+            appCtx.getEnvironment().setActiveProfiles(Profiles.REPOSITORY_IMPLEMENTATION, Profiles.getActiveDbProfile());
             System.out.println("Bean definition names: " + Arrays.toString(appCtx.getBeanDefinitionNames()));
             AdminRestController adminUserController = appCtx.getBean(AdminRestController.class);
             adminUserController.create(new User(null, "userName", "email@mail.ru", "password", Role.ADMIN));
