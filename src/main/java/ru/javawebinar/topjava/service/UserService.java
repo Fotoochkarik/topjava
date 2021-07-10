@@ -51,4 +51,13 @@ public class UserService {
         Assert.notNull(user, "user must not be null");
         checkNotFoundWithId(repository.save(user), user.id());
     }
+
+
+    public User getWithMils(int id) {
+        return repository.getWithMils(id);
+    }
+
+    public User getWithMilsGraph(int id) {
+        return repository.getWithMilsGraph(id);
+    }
 }

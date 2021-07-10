@@ -29,7 +29,8 @@ public class DataJpaUserRepository implements UserRepository {
 
     @Override
     public User get(int id) {
-        return crudRepository.findById(id).orElse(null);
+//        return crudRepository.findById(id).orElse(null);
+        return crudRepository.findById(id);
     }
 
     @Override
@@ -42,7 +43,13 @@ public class DataJpaUserRepository implements UserRepository {
         return crudRepository.findAll(SORT_NAME_EMAIL);
     }
 
-//    public User getWithMeals(int id) {
-//        return crudRepository.getWithMeals(id);
-//    }
+    @Override
+    public User getWithMils(int id) {
+        return crudRepository.getWithMeals(id);
+    }
+
+    @Override
+    public User getWithMilsGraph(int id) {
+        return crudRepository.findById(id);
+    }
 }

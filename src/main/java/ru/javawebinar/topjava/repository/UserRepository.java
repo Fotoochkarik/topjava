@@ -18,4 +18,12 @@ public interface UserRepository {
     User getByEmail(String email);
 
     List<User> getAll();
+
+    default User getWithMils(int id) {
+        throw new UnsupportedOperationException();
+    }
+
+    default User getWithMilsGraph(int id) {
+        throw new UnsupportedOperationException();
+    }
 }
