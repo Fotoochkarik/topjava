@@ -23,6 +23,7 @@ public interface CrudUserRepository extends JpaRepository<User, Integer> {
     User getWithMeals(@Param("id") int id);
 
     @EntityGraph(value = "graph.User.meals", type = EntityGraph.EntityGraphType.LOAD)
+//    @EntityGraph(attributePaths = {"meals"}, type = EntityGraph.EntityGraphType.LOAD)
     User findById(int id);
 
 }
