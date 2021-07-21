@@ -53,7 +53,7 @@ public class JdbcUserRepository implements UserRepository {
     @Transactional
     public User save(User user) {
         BeanPropertySqlParameterSource parameterSource = new BeanPropertySqlParameterSource(user);
-        ValidationUtil.validation(user);
+        ValidationUtil.validate(user);
         if (user.isNew()) {
             Number newKey = insertUser.executeAndReturnKey(parameterSource);
             user.setId(newKey.intValue());
@@ -62,8 +62,9 @@ public class JdbcUserRepository implements UserRepository {
                    registered=:registered, enabled=:enabled, calories_per_day=:caloriesPerDay WHERE id=:id
                 """, parameterSource) == 0) {
             return null;
+        }else {
+            deleteRole(user);
         }
-        deleteRole(user);
         insertRole(user);
         return setRole(user);
     }

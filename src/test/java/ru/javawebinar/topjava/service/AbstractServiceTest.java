@@ -32,7 +32,7 @@ public abstract class AbstractServiceTest {
     public static ExternalResource summary = TimingRules.SUMMARY;
 
     @Autowired
-    Environment environment;
+    private Environment environment;
 
     @Rule
     public Stopwatch stopwatch = TimingRules.STOPWATCH;
